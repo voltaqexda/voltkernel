@@ -1,5 +1,5 @@
 #!/bin/bash
-
+START_TIME=$(date +%s)
 #1. target config
 BUILD_TARGET=dm3q_eur_openx
 export MODEL=$(echo $BUILD_TARGET | cut -d'_' -f1)
@@ -20,9 +20,6 @@ export DIST_DIR=${ANDROID_BUILD_TOP}/out/msm-kernel-${CHIPSET_NAME}-${TARGET_PRO
 export MERGE_CONFIG="${ANDROID_BUILD_TOP}/kernel_platform/common/scripts/kconfig/merge_config.sh"
 
 mkdir -p "${DIST_DIR}"
-
-#3. Cleaning previous kernel compilation
-rm -rf ${OUT_DIR}/gki_kernel/dist
 
 # for Lcd(techpack) driver build
 export KBUILD_EXTRA_SYMBOLS="${ANDROID_BUILD_TOP}/out/vendor/qcom/opensource/mmrm-driver/Module.symvers \
@@ -55,20 +52,15 @@ export MKBOOTIMG_EXTRA_ARGS=" \
     --pagesize 4096"
 
 # ─────────────────────────────────────────
-# 3. TOOLCHAIN DANS LE PATH
+# 3. TOOLCHAIN
 # ─────────────────────────────────────────
 export CLANG_DIR=/home/v/Desktop/toolchain/prebuilts/clang/host/linux-x86/clang-r450784e/bin
 export PATH=$CLANG_DIR:$PATH
 
-# ─────────────────────────────────────────
-# 6. NETTOYAGE resolve_btfids (cache cassé)
-# ─────────────────────────────────────────
-rm -rf ${OUT_DIR}/gki_kernel/common/tools/bpf/resolve_btfids
-rm -rf ${OUT_DIR}/msm-kernel/tools/bpf/resolve_btfids
 mkdir -p /home/v/Desktop/voltkernel/out/target/product/dm3q
 mkdir -p /home/v/Desktop/voltkernel/out/msm-kernel-kalama-gki/dist
 # ─────────────────────────────────────────
-# 7. LANCEMENT DU BUILD
+# 4. BUILD
 # ─────────────────────────────────────────
 echo ""
 echo "========================================="
@@ -78,7 +70,6 @@ export CONFIG_HEADERS_INSTALL=n
 export CONFIG_HEADERS_CHECK=n
 
 ( env ${GKI_KERNEL_BUILD_OPTIONS} ${ANDROID_BUILD_TOP}/kernel_platform/build/android/prepare_vendor.sh sec ${TARGET_PRODUCT} || exit 1) 2>&1 | tee build_log.log
-
 
 printf "\n\n\n"
 echo "##############################################################################"
@@ -90,5 +81,7 @@ echo ""
 mv /home/v/Desktop/voltkernel/out/msm-kernel-kalama-gki/gki_kernel/dist/Image.gz /home/v/Downloads/Image.gz
 
 
-
 echo "#######################FINISHED############################"
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Toplam : $((DURATION / 60)) dakika $((DURATION % 60)) saniye"
